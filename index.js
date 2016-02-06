@@ -41,7 +41,7 @@ module.exports = function setup(options, imports, register) {
     logger = new(winston.Logger)({
       transports: transports
     });
-    
+
   } catch (err) {
     register(err, null);
     return;
