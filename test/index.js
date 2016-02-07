@@ -20,11 +20,11 @@ describe('setup', function() {
   it('returns a logger instance with specified transports', function (done) {
     require('./../index.js')({
       transports: {
-        Console: {
+        console: {
           colorize: true,
           level: 'silly'
         },
-        File: {
+        file: {
           filename: 'somefile.log'
         }
       }
@@ -40,4 +40,49 @@ describe('setup', function() {
     });
   });
 
+});
+
+describe('loggerFactory', function () {
+  it('disallows creation without category', function (done) {
+    require('./../index.js')(pluginMeta, {}, function (err, services) {
+      try {
+        services.loggerFactory.create();
+        assert(false, 'Triggers an error when no category provided');
+      } catch (err) {
+        assert(err instanceof Error, 'Triggers an error when no category provided');
+      }
+      done();
+    });
+  });
+  it('uses default transports', function (done) {
+    require('./../index.js')(pluginMeta, {}, function (err, services) {
+      var logger1 = services.loggerFactory.create('category 1');
+      assert(logger1 instanceof Object, 'Services should export a logger object');
+      assert(logger1 instanceof Object, 'Logger has transports');
+      assert(logger1.transports.console instanceof Object, 'Logger has console transport');
+      done();
+    });
+  });
+  it('Configures label', function (done) {
+    require('./../index.js')(pluginMeta, {}, function (err, services) {
+      var logger1 = services.loggerFactory.create('category 1', 'category-1-prefix');
+      assert(logger1.transports.console.label === 'category-1-prefix', 'Console transport has correct label');
+      done();
+    });
+  });
+  it('uses respects specified additional transports', function (done) {
+    require('./../index.js')(pluginMeta, {}, function (err, services) {
+      var logger1 = services.loggerFactory.create('something', 'something-prefix', {
+        file: {
+          filename: 'somefile.log'
+        }
+      });
+      assert(logger1 instanceof Object, 'Services should export a logger object');
+      assert(logger1 instanceof Object, 'Logger has transports');
+      assert(logger1.transports.console instanceof Object, 'Logger has console transport');
+      assert(logger1.transports.file instanceof Object, 'Logger has file transport');
+      assert(logger1.transports.file.filename === 'somefile.log', 'Logger has correct file transport options');
+      done();
+    });
+  });
 });

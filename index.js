@@ -1,13 +1,96 @@
 'use strict';
 
 var assert = require('assert');
+var merge = require('merge');
 var winston = require('winston');
+var upperCaseFirst = require('upper-case-first');
 
 module.exports = function setup(options, imports, register) {
 
-  var transportName,
-    transports = [],
-    logger;
+  function addLabel(transports, label) {
+    var transportName;
+
+    if (!label) {
+      return transports;
+    }
+
+    for (transportName in transports) {
+      if (!transports.hasOwnProperty(transportName)) {
+        continue;
+      }
+      if (label) {
+        transports[transportName].label = label;
+      }
+    }
+    return transports;
+  }
+
+
+  /**
+   * Build an array of transports from config that resembles:
+   * [
+   *   new (winston.transports.Console)(config.Console),
+   *   // example: { level: 'debug' }),
+   *   new (winston.transports.File)(config.File)
+   *   // example: { filename: path.join(__dirname, '/../../logs/app.log') })
+   * ]
+   * @param  {object<string,object>} transports - an objects keyed by tranport name with configuration
+   * @param  {string} label                     - (optional) label to be added to all transports [default=false]
+   * @return {array<Transport>}                 - an array of winston Transport objects
+   */
+  function buildTransports(transports, label) {
+    var transport, transportName, transportNameUC, result = [];
+
+    // clone, so we don't overwrite defaults
+    transports = merge(true, transports);
+
+    for (transportName in transports) {
+      if (!transports.hasOwnProperty(transportName) || '_merge' === transportName) {
+        continue;
+      }
+
+      transportNameUC = upperCaseFirst(transportName);
+
+      if (!winston.transports[transportNameUC]) {
+        console.error(
+          'WARNING: winston logging configuration specifies undefined transport `%s` which will be ignored',
+          transportName);
+        continue;
+      }
+
+      if (label) {
+        transports[transportName].label = label;
+      }
+
+      transport = new (winston.transports[transportNameUC])(transports[transportName]);
+      result.push(transport);
+    }
+
+    return result;
+  }
+
+  function LoggerFactory(container, defaultTransports) {
+    this.container = container;
+    this.defaultTransports = defaultTransports;
+  }
+
+  LoggerFactory.prototype.create = function (category, label, transports) {
+    var transportOptions = merge(true, this.defaultTransports);
+    if (!category) {
+      throw new Error('Must provide a category for new logger creation as first argument');
+    }
+    transportOptions = merge(transportOptions, transports);
+    this.container.add(category, addLabel(transportOptions, label));
+    return this.container.get(category);
+  };
+
+  LoggerFactory.prototype.get = function (category) {
+    return this.container.get(category);
+  };
+
+  var logger,
+    loggerFactory,
+    loggerContainer;
 
   try {
 
@@ -15,32 +98,13 @@ module.exports = function setup(options, imports, register) {
     assert(options instanceof Object, 'The first argument must be an options object');
     assert(register instanceof Function, 'The third argument must be a callback');
 
-    // build an array of transports from config that resembles:
-    // [
-    //    new (winston.transports.Console)(config.Console),
-    //    // example: { level: 'debug' }),
-    //    new (winston.transports.File)(config.File)
-    //    // example: { filename: path.join(__dirname, '/../../logs/app.log') })
-    // ]
-    for (transportName in options.transports || {}) {
+    loggerContainer = new winston.Container();
 
-      if (!options.transports.hasOwnProperty(transportName) || '_merge' === transportName) {
-        continue;
-      }
-
-      if (!winston.transports[transportName]) {
-        console.warn(
-          'WARNING: winston logging configuration specifies undefined transport `%s` which will be ignored',
-          transportName);
-        continue;
-      }
-
-      transports.push(new winston.transports[transportName](options.transports[transportName]));
-    }
-
-    logger = new(winston.Logger)({
-      transports: transports
+    logger = new winston.Logger({
+      transports: buildTransports(options.transports)
     });
+
+    loggerFactory = new LoggerFactory(loggerContainer, options.transports);
 
   } catch (err) {
     register(err, null);
@@ -48,6 +112,8 @@ module.exports = function setup(options, imports, register) {
   }
 
   register(null, {
-    logger: logger
+    logger: logger,
+    loggerContainer: loggerContainer,
+    loggerFactory: loggerFactory
   });
 };
