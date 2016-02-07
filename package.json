@@ -1,6 +1,6 @@
 {
   "name": "architect-winston-logger",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Wrapper for winston to use architect",
   "main": "index.js",
   "dependencies": {
@@ -13,6 +13,7 @@
     "grunt": "^0.4.5",
     "grunt-contrib-jshint": "^0.12.0",
     "grunt-jsbeautifier": "^0.2.10",
+    "grunt-release": "^0.13.0",
     "mocha": "^2.4.5"
   },
   "scripts": {
