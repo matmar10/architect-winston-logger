@@ -1,6 +1,6 @@
 {
   "name": "architect-winston-logger",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Wrapper for winston to use architect",
   "main": "index.js",
   "dependencies": {
