@@ -62,7 +62,7 @@ module.exports = function setup(options, imports, register) {
         transports[transportName].label = label;
       }
 
-      transport = new (winston.transports[transportNameUC])(transports[transportName]);
+      transport = new(winston.transports[transportNameUC])(transports[transportName]);
       result.push(transport);
     }
 
@@ -75,13 +75,26 @@ module.exports = function setup(options, imports, register) {
   }
 
   LoggerFactory.prototype.create = function (category, label, transports) {
-    var transportOptions = merge(true, this.defaultTransports);
+    var transportOptions = merge(true, this.defaultTransports),
+      logger;
     if (!category) {
       throw new Error('Must provide a category for new logger creation as first argument');
     }
     transportOptions = merge(transportOptions, transports);
     this.container.add(category, addLabel(transportOptions, label));
-    return this.container.get(category);
+    // easy way to destroy a logger instance
+    logger = this.container.get(category);
+    logger.destroy = function () {
+      this.container.close(category);
+    }.bind(this);
+    return logger;
+  };
+
+  LoggerFactory.prototype.destroy = function (category) {
+    if (!category) {
+      throw new Error('Must provide a category for new logger creation as first argument');
+    }
+    return this.container.close(category);
   };
 
   LoggerFactory.prototype.get = function (category) {
