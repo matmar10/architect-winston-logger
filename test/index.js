@@ -87,6 +87,7 @@ describe('loggerFactory', function () {
   });
   it('removes specified container', function (done) {
     require('./../index.js')(pluginMeta, {}, function (err, services) {
+
       var logger1 = services.loggerFactory.create('something', 'something-prefix', {
         file: {
           filename: 'somefile.log'
@@ -95,7 +96,15 @@ describe('loggerFactory', function () {
       assert(logger1.destroy instanceof Function, 'Logger exposes destroy method');
       assert(services.loggerContainer.loggers.something, 'Logger exists before destroyed');
       logger1.destroy();
-      assert(!services.loggerContainer.loggers.something, 'Logger destroyed');
+
+      services.loggerFactory.create('something2', 'something-prefix2', {
+        file: {
+          filename: 'somefile.log'
+        }
+      });
+      assert(services.loggerContainer.loggers.something2, 'Logger exists before destroyed');
+      services.loggerFactory.destroy('something2');
+      assert(!services.loggerContainer.loggers.something2, 'Logger destroyed');
       done();
     });
   });
