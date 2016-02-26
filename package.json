@@ -4,6 +4,7 @@
   "description": "Wrapper for winston to use architect",
   "main": "index.js",
   "dependencies": {
+    "camel-case": "^1.2.2",
     "load-grunt-tasks": "^3.4.0",
     "merge": "^1.2.0",
     "upper-case-first": "^1.1.2",

@@ -4,6 +4,7 @@ var assert = require('assert');
 var merge = require('merge');
 var winston = require('winston');
 var upperCaseFirst = require('upper-case-first');
+var camelCase = require('camel-case');
 
 module.exports = function setup(options, imports, register) {
 
@@ -75,18 +76,31 @@ module.exports = function setup(options, imports, register) {
   }
 
   LoggerFactory.prototype.create = function (category, label, transports) {
+    var factory = this;
+
     var transportOptions = merge(true, this.defaultTransports),
       logger;
     if (!category) {
       throw new Error('Must provide a category for new logger creation as first argument');
     }
+
     transportOptions = merge(transportOptions, transports);
+
     this.container.add(category, addLabel(transportOptions, label));
-    // easy way to destroy a logger instance
     logger = this.container.get(category);
+
+    logger.label = label;
+    logger.category = category;
+
     logger.destroy = function () {
-      this.container.close(category);
-    }.bind(this);
+      factory.container.close(category);
+    };
+
+    logger.createChild = function (label) {
+      var category = camelCase(this.category + label);
+      return factory.create(category, this.label + ':' + label);
+    };
+
     return logger;
   };
 

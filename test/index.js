@@ -70,7 +70,7 @@ describe('loggerFactory', function () {
       done();
     });
   });
-  it('uses respects specified additional transports', function (done) {
+  it('respects specified additional transports', function (done) {
     require('./../index.js')(pluginMeta, {}, function (err, services) {
       var logger1 = services.loggerFactory.create('something', 'something-prefix', {
         file: {
@@ -85,6 +85,18 @@ describe('loggerFactory', function () {
       done();
     });
   });
+
+  it('chains onto prefix', function (done) {
+    require('./../index.js')(pluginMeta, {}, function (err, services) {
+      var logger1 = services.loggerFactory.create('someLogger', 'prefix1');
+      var logger2 = logger1.createChild('prefix2');
+      for (var transport in logger2.transports) {
+        assert(logger2.transports[transport].label === 'prefix1:prefix2', 'Prefix chained to parent');
+      }
+      done();
+    });
+  });
+
   it('removes specified container', function (done) {
     require('./../index.js')(pluginMeta, {}, function (err, services) {
 
