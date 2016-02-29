@@ -75,6 +75,10 @@ module.exports = function setup(options, imports, register) {
     this.defaultTransports = defaultTransports;
   }
 
+  LoggerFactory.prototype.getDefaultTransports = function () {
+    return this.defaultTransports;
+  };
+
   LoggerFactory.prototype.create = function (category, label, transports) {
     var factory = this;
 
@@ -141,6 +145,7 @@ module.exports = function setup(options, imports, register) {
   register(null, {
     logger: logger,
     loggerContainer: loggerContainer,
-    loggerFactory: loggerFactory
+    loggerFactory: loggerFactory,
+    loggerTransportsFactory: buildTransports
   });
 };
