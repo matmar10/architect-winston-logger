@@ -30,7 +30,8 @@
     "provides": [
       "logger",
       "loggerContainer",
-      "loggerFactory"
+      "loggerFactory",
+      "loggerTransportsFactory"
     ],
     "transports": {
       "console": {
