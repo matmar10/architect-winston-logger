@@ -18,5 +18,5 @@
   "undef": true,
   "unused": true,
   "eqnull": true,
-  "predef": ["describe", "it"]
+  "predef": ["describe", "it", "afterEach"]
 }

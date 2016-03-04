@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "camel-case": "^1.2.2",
+    "common-errors": "^0.5.3",
     "load-grunt-tasks": "^3.4.0",
     "merge": "^1.2.0",
     "upper-case-first": "^1.1.2",
@@ -15,7 +16,8 @@
     "grunt-contrib-jshint": "^0.12.0",
     "grunt-jsbeautifier": "^0.2.10",
     "grunt-release": "^0.13.0",
-    "mocha": "^2.4.5"
+    "mocha": "^2.4.5",
+    "winston-raygun": "0.0.6"
   },
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha"
@@ -28,15 +30,9 @@
   "license": "MIT",
   "plugin": {
     "provides": [
-      "logger",
       "loggerContainer",
       "loggerFactory",
       "loggerTransportsFactory"
-    ],
-    "transports": {
-      "console": {
-        "level": "silly"
-      }
-    }
+    ]
   }
 }
