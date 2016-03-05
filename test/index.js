@@ -4,6 +4,17 @@ var assert = require('assert');
 var fs = require('fs');
 var pluginMeta = JSON.parse(fs.readFileSync(__dirname + '/../package.json')).plugin;
 
+describe('setup', function () {
+  it('provides all declared services', function (done) {
+    require('./../index.js')(pluginMeta, {}, function (err, services) {
+      for (var i = 0; i < pluginMeta.provides.length; i++) {
+        assert(services[pluginMeta.provides[i]], 'Provides declared produced service `' + pluginMeta.provides[i] + '`');
+      }
+      done();
+    });
+  });
+});
+
 describe('loggerTransportRegistry', function () {
 
   describe('register', function () {
